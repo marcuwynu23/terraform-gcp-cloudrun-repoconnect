@@ -1,0 +1,8 @@
+project_id   = "your-project-id"
+region       = "us-central1"
+service_name = "my-node-ts-service"
+github_repo_url = "https://github.com/marcuwynu23/node-typescript-modular-boilerplate"
+developer_connect_connection_name = "github-connection"
+github_owner = "marcuwynu23"
+github_repo_name = "node-typescript-modular-boilerplate"
+github_ref = "main"
