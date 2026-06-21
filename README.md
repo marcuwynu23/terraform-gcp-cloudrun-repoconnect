@@ -153,8 +153,6 @@ terraform destroy
 
 This will delete all resources created by Terraform. The Cloud Build trigger and GitHub connection must be deleted manually from the GCP Console if desired.
 
----
-
 ## Usage as a Module
 
 Reference this repository as a Terraform module in your own configurations:
@@ -181,8 +179,6 @@ output "service_url" {
   value = module.cloud_run_repo.external_url
 }
 ```
-
----
 
 ## Variables
 
