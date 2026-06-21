@@ -168,7 +168,7 @@ module "cloud_run_repo" {
   service_name = "my-app"
 
   github_owner = "my-org"
-  github_repo  = "my-repo"
+  github_repo_name = "my-repo"
   github_ref   = "main"
 }
 ```
@@ -182,4 +182,25 @@ output "service_url" {
 }
 ```
 
-All [variables](#variables) and [outputs](#outputs) documented below are available when using this as a module.
+---
+
+## Variables
+
+| Variable | Description | Type | Default |
+|----------|-------------|------|---------|
+| `project_id` | GCP project ID | `string` | (required) |
+| `region` | GCP region | `string` | `"us-central1"` |
+| `service_name` | Cloud Run service name | `string` | `"node-ts-service"` |
+| `github_repo_url` | GitHub repository URL | `string` | `"https://github.com/..."` |
+| `developer_connect_connection_name` | Developer Connect connection name | `string` | `"github-connection"` |
+| `github_owner` | GitHub repository owner | `string` | `"marcuwynu23"` |
+| `github_repo_name` | GitHub repository name | `string` | `"node-typescript-modular-boilerplate"` |
+| `github_ref` | GitHub reference (branch/tag/commit) | `string` | `"main"` |
+| `service_account_email` | Service account email for Cloud Build | `string` | `""` |
+
+## Outputs
+
+| Output | Description |
+|--------|-------------|
+| `external_url` | External URL of the Cloud Run service |
+| `service_name` | Name of the Cloud Run service |
