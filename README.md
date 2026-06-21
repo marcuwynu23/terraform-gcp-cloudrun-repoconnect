@@ -152,3 +152,34 @@ terraform destroy
 ```
 
 This will delete all resources created by Terraform. The Cloud Build trigger and GitHub connection must be deleted manually from the GCP Console if desired.
+
+---
+
+## Usage as a Module
+
+Reference this repository as a Terraform module in your own configurations:
+
+```hcl
+module "cloud_run_repo" {
+  source = "github.com/marcuwynu23/terraform-gcp-cloudrun-repoconnect?ref=main"
+
+  project_id   = var.project_id
+  region       = "us-central1"
+  service_name = "my-app"
+
+  github_owner = "my-org"
+  github_repo  = "my-repo"
+  github_ref   = "main"
+}
+```
+
+Then use the outputs in your configuration:
+
+```hcl
+# Example: pass the service URL to a load balancer
+output "service_url" {
+  value = module.cloud_run_repo.external_url
+}
+```
+
+All [variables](#variables) and [outputs](#outputs) documented below are available when using this as a module.
