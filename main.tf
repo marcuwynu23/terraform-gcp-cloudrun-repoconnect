@@ -31,9 +31,9 @@ data "google_project" "project" {
 
 # IAM permissions for Cloud Build to deploy to Cloud Run
 resource "google_project_iam_member" "cloudbuild_run_admin" {
-  project = var.project_id
-  role    = "roles/run.admin"
-  member  = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+  project    = var.project_id
+  role       = "roles/run.admin"
+  member     = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
   depends_on = [google_project_service.required_apis["cloudbuild.googleapis.com"]]
 }
 
