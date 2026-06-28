@@ -1,0 +1,90 @@
+name: CD - GCP Cloud Run Repo Connect (Apply / Destroy)
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Terraform operation
+        required: true
+        type: choice
+        options:
+          - apply
+          - destroy
+        default: apply
+      project_id:
+        description: GCP project ID
+        required: true
+        type: string
+      region:
+        description: GCP region
+        required: true
+        type: string
+        default: us-central1
+      service_name:
+        description: Name of the Cloud Run service
+        required: true
+        type: string
+        default: node-ts-service
+      github_repo_url:
+        description: GitHub repository URL
+        required: true
+        type: string
+        default: https://github.com/marcuwynu23/node-typescript-modular-boilerplate
+      developer_connect_connection_name:
+        description: Developer Connect connection name
+        required: true
+        type: string
+        default: github-connection
+      github_owner:
+        description: GitHub repository owner
+        required: true
+        type: string
+        default: marcuwynu23
+      github_repo_name:
+        description: GitHub repository name
+        required: true
+        type: string
+        default: node-typescript-modular-boilerplate
+      github_ref:
+        description: GitHub reference (branch, tag, or commit)
+        required: true
+        type: string
+        default: main
+
+env: {}
+
+jobs:
+  provision:
+    name: Terraform ${{ github.event.inputs.command }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+      - name: Terraform Init
+        run: terraform init
+      - name: Terraform Plan
+        run: |
+          terraform plan ${{ github.event.inputs.command == 'destroy' && '-destroy' || '' }} \
+            -var="project_id=${{ github.event.inputs.project_id }}" \
+            -var="region=${{ github.event.inputs.region }}" \
+            -var="service_name=${{ github.event.inputs.service_name }}" \
+            -var="github_repo_url=${{ github.event.inputs.github_repo_url }}" \
+            -var="developer_connect_connection_name=${{ github.event.inputs.developer_connect_connection_name }}" \
+            -var="github_owner=${{ github.event.inputs.github_owner }}" \
+            -var="github_repo_name=${{ github.event.inputs.github_repo_name }}" \
+            -var="github_ref=${{ github.event.inputs.github_ref }}"
+      - name: Terraform Apply / Destroy
+        run: |
+          terraform ${{ github.event.inputs.command }} -auto-approve \
+            -var="project_id=${{ github.event.inputs.project_id }}" \
+            -var="region=${{ github.event.inputs.region }}" \
+            -var="service_name=${{ github.event.inputs.service_name }}" \
+            -var="github_repo_url=${{ github.event.inputs.github_repo_url }}" \
+            -var="developer_connect_connection_name=${{ github.event.inputs.developer_connect_connection_name }}" \
+            -var="github_owner=${{ github.event.inputs.github_owner }}" \
+            -var="github_repo_name=${{ github.event.inputs.github_repo_name }}" \
+            -var="github_ref=${{ github.event.inputs.github_ref }}"
