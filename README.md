@@ -200,3 +200,60 @@ output "service_url" {
 |--------|-------------|
 | `external_url` | External URL of the Cloud Run service |
 | `service_name` | Name of the Cloud Run service |
+
+## Resources Created
+
+- `google_project_service.required_apis` – Enables Cloud Run, Cloud Build, Artifact Registry, and IAM APIs
+- `random_id.suffix` – Random suffix for unique service name
+- `google_project_iam_member.cloudbuild_run_admin` – IAM role for Cloud Build to deploy to Cloud Run
+- `google_cloud_run_v2_service.default` – Cloud Run V2 service deployed from GitHub
+- `google_cloud_run_v2_service_iam_member.noauth` – IAM policy for unauthenticated access
+## CI/CD Setup (GitHub Actions)
+
+### Prerequisites
+1. **Create a GCS bucket** for Terraform remote state:
+    ```bash
+    gcloud storage buckets create gs://your-terraform-state-bucket \
+      --location=us-central1 \
+      --uniform-bucket-level-access
+    ```
+
+2. **Create a service account** with necessary permissions and generate a JSON key:
+    - GCP Console → IAM & Admin → Service Accounts → Create Service Account
+    - Grant the required roles for this module
+    - Keys → Add Key → Create New Key → JSON
+    - Copy the entire JSON file contents
+
+3. **Add GitHub secrets**:
+
+    | Secret Name | Value |
+    |---|---|
+    | `GCP_SA_KEY` | Full JSON key from step 2 |
+    | `TF_BUCKET_NAME` | Your GCS bucket name |
+    | `TF_BUCKET_PREFIX` | Bucket prefix/path (e.g., `gcp-cloudrun-repoconnect`) |
+
+4. **Run the workflow**:
+    - **Apply**: Go to Actions → **CD - GCP Cloud Run Repo Connect (Apply)** → fill in all inputs
+    - **Destroy**: Go to Actions → **CD - GCP Cloud Run Repo Connect (Destroy)** → fill in essential inputs
+
+> Alternatively, create a `backend.tfvars` from `backend.tfvars.example` and run `terraform init -backend-config="backend.tfvars"` for local use.
+
+## Remote State (GCS Backend)
+
+This module uses Google Cloud Storage (GCS) as the Terraform backend for remote state management:
+
+```hcl
+terraform {
+  backend "gcs" {
+    bucket = "your-terraform-state-bucket"
+    prefix = "gcp-cloudrun-repoconnect"
+  }
+}
+```
+
+Create a `backend.tfvars` file based on `backend.tfvars.example` and initialize:
+
+```bash
+terraform init -backend-config="backend.tfvars"
+```
+
