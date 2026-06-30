@@ -1,0 +1,105 @@
+name: CD - GCP Cloud Run Repo Connect (Apply)
+
+on:
+  workflow_dispatch:
+    inputs:
+
+      project_id:
+        description: GCP project ID
+        required: true
+        type: string
+
+      region:
+        description: "GCP region (Free Tier: us-west1, us-central1, us-east1)"
+        required: true
+        type: string
+        default: us-central1
+
+      service_name:
+        description: service name
+        required: true
+        type: string
+
+      github_repo_url:
+        description: github repo url
+        required: true
+        type: string
+
+      developer_connect_connection_name:
+        description: developer connect connection name
+        required: true
+        type: string
+
+      github_owner:
+        description: github owner
+        required: true
+        type: string
+
+      github_repo_name:
+        description: github repo name
+        required: true
+        type: string
+
+      github_ref:
+        description: github ref
+        required: true
+        type: string
+
+      service_account_email:
+        description: service account email
+        required: true
+        type: string
+
+env:
+  TF_BUCKET_NAME: ${{ secrets.TF_BUCKET_NAME }}
+  TF_BUCKET_PREFIX: ${{ secrets.TF_BUCKET_PREFIX }}
+jobs:
+  apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Authenticate to GCP
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: latest
+    - name: Ensure GCS State Bucket Exists
+      run: |
+        gcloud storage buckets describe gs://$TF_BUCKET_NAME --format="json" 2>/dev/null || \
+        gcloud storage buckets create gs://$TF_BUCKET_NAME \
+          --location=${{ github.event.inputs.region }} \
+          --uniform-bucket-level-access
+    - name: Terraform Init
+      run: |
+        terraform init \
+          -backend-config="bucket=$TF_BUCKET_NAME" \
+          -backend-config="prefix=$TF_BUCKET_PREFIX"
+    - name: Terraform Plan
+      run: |
+        terraform plan  \
+          -var="project_id=${{ github.event.inputs.project_id }}" \
+          -var="region=${{ github.event.inputs.region }}" \
+          -var="service_name=${{ github.event.inputs.service_name }}" \
+          -var="github_repo_url=${{ github.event.inputs.github_repo_url }}" \
+          -var="developer_connect_connection_name=${{ github.event.inputs.developer_connect_connection_name }}" \
+          -var="github_owner=${{ github.event.inputs.github_owner }}" \
+          -var="github_repo_name=${{ github.event.inputs.github_repo_name }}" \
+          -var="github_ref=${{ github.event.inputs.github_ref }}" \
+          -var="service_account_email=${{ github.event.inputs.service_account_email }}"
+    - name: Terraform Apply
+      run: |
+        terraform apply -auto-approve  \
+          -var="project_id=${{ github.event.inputs.project_id }}" \
+          -var="region=${{ github.event.inputs.region }}" \
+          -var="service_name=${{ github.event.inputs.service_name }}" \
+          -var="github_repo_url=${{ github.event.inputs.github_repo_url }}" \
+          -var="developer_connect_connection_name=${{ github.event.inputs.developer_connect_connection_name }}" \
+          -var="github_owner=${{ github.event.inputs.github_owner }}" \
+          -var="github_repo_name=${{ github.event.inputs.github_repo_name }}" \
+          -var="github_ref=${{ github.event.inputs.github_ref }}" \
+          -var="service_account_email=${{ github.event.inputs.service_account_email }}"
